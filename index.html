@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alem Event</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="app">
+
+    <header class="topbar">
+     <div class="logo">
+   <img src="images/logo.png" alt="Alem Event" class="brand-logo">
+</div>
+        <div class="top-actions">
+
+            <div class="language-switch">
+                <button class="language-btn" data-lang="kk">ҚАЗ</button>
+                <button class="language-btn" data-lang="ru">РУС</button>
+            </div>
+
+            <div class="avatar">СН</div>
+        </div>
+    </header>
+
+    <main>
+
+        <section class="welcome">
+            <h1>
+                <span data-i18n="greeting">Қайырлы күн,</span><br>
+                <span data-i18n="name">Сапар!</span>
+            </h1>
+
+            <p data-i18n="importantTasks">
+                Бүгін 3 маңызды тапсырма бар
+            </p>
+        </section>
+
+        <section class="event-card">
+            <div class="event-info">
+                <span data-i18n="currentEvent">
+                    Ағымдағы іс-шара
+                </span>
+
+                <h2>O&D</h2>
+                <p>18 қазан 2026</p>
+            </div>
+
+            <div class="progress-box">
+                <div class="progress-title">
+                    <span data-i18n="preparation">
+                        Дайындық деңгейі
+                    </span>
+                    <strong>63%</strong>
+                </div>
+
+                <div class="progress">
+                    <div class="progress-fill"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="stats">
+
+            <div class="stat-card">
+               <div class="stat-icon">📋</div>
+                <span data-i18n="tasks">Тапсырмалар</span>
+                <strong id="homeTaskCount">0</strong>
+               <small id="homeTaskWaiting" data-i18n="waiting">
+  0 орындалу күтуде
+</small>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <span data-i18n="guests">Қонақтар</span>
+                <strong>147</strong>
+                <small data-i18n="confirmed">
+                    Расталған
+                </small>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">₸</div>
+                <span data-i18n="budget">Бюджет</span>
+                <strong id="homeBudget">0 ₸</strong>
+               <small id="homePaid">0% төленген</small>
+            </div>
+
+        </section>
+
+        <section class="tasks">
+
+            <div class="section-title">
+                <h2 data-i18n="upcomingTasks">
+                    Жақын тапсырмалар
+                </h2>
+
+                <span>
+                    <span data-i18n="all">Барлығы</span> ›
+                </span>
+            </div>
+
+        <div class="task-list" id="homeUpcomingTasks"></div>
+        </section>
+
+        <section class="meetings">
+
+            <div class="section-title">
+                <h2 data-i18n="upcomingMeetings">
+                    Жақын кездесулер
+                </h2>
+
+                <span>
+                    <a href="meetings.html" class="all-link">
+  <span data-i18n="all">Барлығы</span> ›
+</a>
+                </span>
+            </div>
+
+           <div id="homeUpcomingMeetings"></div>
+        </section>
+
+    </main>
+
+   <nav class="bottom-nav">
+  <button class="active" data-page="home">
+    <span>◆</span>
+    <label data-i18n="home">Басты бет</label>
+  </button>
+
+  <button type="button" onclick="window.location.href='tasks.html'">
+  <span>☑</span>
+  <label data-i18n="tasks">Тапсырмалар</label>
+</button>
+
+  <button data-page="estimate">
+    <span>₸</span>
+    <label data-i18n="estimate">Смета</label>
+  </button>
+
+  <button data-page="timing">
+    <span>◷</span>
+    <label data-i18n="timing">Тайминг</label>
+  </button>
+
+  <button data-page="more">
+    <span>•••</span>
+    <label data-i18n="more">Тағы</label>
+  </button>
+</nav>
+
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

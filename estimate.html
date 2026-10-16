@@ -1,0 +1,356 @@
+
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alem Event — Смета</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #14225b;
+  color: white;
+}
+.app {
+  max-width: 600px;
+  min-height: 100vh;
+  margin: auto;
+  padding: 25px 20px 100px;
+  background: linear-gradient(160deg,#18295c,#244caa,#244caa);
+}
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 35px;
+}
+.logo { width: 145px; max-height: 90px; object-fit: contain; }
+.lang button, .back {
+  background: #344a86;
+  border: 1px solid #e6c77b;
+  border-radius: 12px;
+  padding: 10px;
+  color: white;
+  cursor: pointer;
+}
+h1 { font-size: 30px; margin-bottom: 8px; }
+h2 { font-size: 21px; }
+.subtitle { color: #d9e5ff; }
+.card {
+  padding: 20px;
+  margin: 18px 0;
+  border: 1px solid #e6c77b;
+  border-radius: 22px;
+  background: rgba(255,255,255,.09);
+}
+input {
+  width: 100%;
+  padding: 15px;
+  margin: 7px 0;
+  border: 0;
+  border-radius: 12px;
+  font-size: 16px;
+}
+button { font: inherit; }
+.gold {
+  background: #f1d58e;
+  color: #24345c;
+  border: 0;
+  border-radius: 12px;
+  padding: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 10px;
+}
+.item {
+  border: 1px solid #b9c9ff;
+  background: rgba(255,255,255,.09);
+  border-radius: 15px;
+  padding: 15px;
+  margin: 12px 0;
+}
+.item-title { font-weight: bold; font-size: 18px; }
+.item p { margin: 8px 0; color: #dce6ff; }
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+.actions button {
+  flex: 1;
+  border: 1px solid #e6c77b;
+  border-radius: 9px;
+  padding: 10px;
+  background: #263f8c;
+  color: white;
+  cursor: pointer;
+}
+.summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.summary .card { margin: 5px 0; }
+.summary strong { display: block; margin-top: 8px; }
+.small { color: #dce6ff; font-size: 13px; }
+.hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <img src="images/logo.png" class="logo" alt="Alem Event">
+  <div class="lang">
+    <button onclick="setLang('kk')">ҚАЗ</button>
+    <button onclick="setLang('ru')">РУС</button>
+  </div>
+</header>
+
+<section id="eventsPage">
+  <h1 data-kk="Смета" data-ru="Смета">Смета</h1>
+  <p class="subtitle" data-kk="Іс-шаралардың бюджетін басқару"
+     data-ru="Управление бюджетами мероприятий">
+    Іс-шаралардың бюджетін басқару
+  </p>
+  <div class="card">
+    <h2 data-kk="Жаңа іс-шара" data-ru="Новое мероприятие">Жаңа іс-шара</h2>
+    <form id="eventForm">
+      <input id="eventName" required placeholder="Іс-шара атауы">
+      <input id="eventDate" type="date" required>
+      <button class="gold" type="submit" data-kk="+ Іс-шара қосу"
+        data-ru="+ Добавить мероприятие">+ Іс-шара қосу</button>
+    </form>
+  </div>
+  <h2 data-kk="Іс-шаралар тізімі" data-ru="Список мероприятий">
+    Іс-шаралар тізімі
+  </h2>
+  <div id="eventList"></div>
+  <button class="gold" onclick="location.href='index.html'"
+    data-kk="← Басты бетке қайту" data-ru="← На главную">
+    ← Басты бетке қайту
+  </button>
+</section>
+
+<section id="budgetPage" class="hidden">
+  <button class="back" onclick="showEvents()" data-kk="← Артқа"
+    data-ru="← Назад">← Артқа</button>
+  <h1 id="budgetTitle"></h1>
+  <div class="summary">
+    <div class="card">
+      <span data-kk="Жалпы бюджет" data-ru="Общий бюджет">Жалпы бюджет</span>
+      <strong id="total">0 ₸</strong>
+    </div>
+    <div class="card">
+      <span data-kk="Төленді" data-ru="Оплачено">Төленді</span>
+      <strong id="paid">0 ₸</strong>
+    </div>
+    <div class="card">
+      <span data-kk="Қалған қарыз" data-ru="Остаток">Қалған қарыз</span>
+      <strong id="remaining">0 ₸</strong>
+    </div>
+    <div class="card">
+      <span data-kk="Төлем пайызы" data-ru="Процент оплаты">Төлем пайызы</span>
+      <strong id="percent">0%</strong>
+    </div>
+  </div>
+  <div class="card">
+    <h2 data-kk="Жаңа шығын" data-ru="Новый расход">Жаңа шығын</h2>
+    <form id="expenseForm">
+      <input id="expenseName" required placeholder="Шығын атауы">
+      <input id="expenseAmount" required type="number" min="0" step="1"
+        placeholder="Жалпы сома ₸">
+      <input id="expensePaid" required type="number" min="0" step="1"
+        placeholder="Төленген сома ₸">
+      <button class="gold" type="submit" data-kk="+ Шығын қосу"
+        data-ru="+ Добавить расход">+ Шығын қосу</button>
+    </form>
+  </div>
+  <h2 data-kk="Шығындар тізімі" data-ru="Список расходов">Шығындар тізімі</h2>
+  <div id="expenseList"></div>
+</section>
+</div>
+
+<script>
+const KEY = "alemEstimateV1";
+let events = [];
+try {
+  const saved = JSON.parse(localStorage.getItem(KEY) || "[]");
+  events = Array.isArray(saved) ? saved : [];
+} catch(e) { events = []; }
+
+let activeId = null;
+let lang = localStorage.getItem("alemLanguage") === "ru" ? "ru" : "kk";
+
+const words = {
+  kk: {
+    event:"Іс-шара атауы", expense:"Шығын атауы",
+    amount:"Жалпы сома ₸", paid:"Төленген сома ₸",
+    open:"Ашу", delete:"Өшіру", edit:"Өзгерту",
+    empty:"Әзірге мәлімет жоқ",
+    confirm:"Өшіруге сенімдісіз бе?",
+    invalid:"Төленген сома жалпы сомадан аспауы керек",
+    total:"Жалпы", paidLabel:"Төленді"
+  },
+  ru: {
+    event:"Название мероприятия", expense:"Название расхода",
+    amount:"Общая сумма ₸", paid:"Оплачено ₸",
+    open:"Открыть", delete:"Удалить", edit:"Изменить",
+    empty:"Пока нет данных",
+    confirm:"Вы уверены, что хотите удалить?",
+    invalid:"Оплаченная сумма не должна превышать общую",
+    total:"Всего", paidLabel:"Оплачено"
+  }
+};
+
+function save() {
+  localStorage.setItem(KEY, JSON.stringify(events));
+}
+function money(n) {
+  return Number(n || 0).toLocaleString("ru-RU") + " ₸";
+}
+function setLang(value) {
+  lang = value;
+  localStorage.setItem("alemLanguage", value);
+  document.documentElement.lang = value;
+  document.querySelectorAll("[data-kk]").forEach(el => {
+    el.textContent = el.dataset[value];
+  });
+  eventName.placeholder = words[lang].event;
+  expenseName.placeholder = words[lang].expense;
+  expenseAmount.placeholder = words[lang].amount;
+  expensePaid.placeholder = words[lang].paid;
+  renderEvents();
+  if (activeId !== null) renderBudget();
+}
+function makeButton(text, action) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.textContent = text;
+  b.onclick = action;
+  return b;
+}
+function showEvents() {
+  activeId = null;
+  eventsPage.classList.remove("hidden");
+  budgetPage.classList.add("hidden");
+  renderEvents();
+}
+function openBudget(id) {
+  activeId = id;
+  eventsPage.classList.add("hidden");
+  budgetPage.classList.remove("hidden");
+  renderBudget();
+  window.scrollTo(0,0);
+}
+function renderEvents() {
+  eventList.replaceChildren();
+  if (!events.length) {
+    eventList.textContent = words[lang].empty;
+    return;
+  }
+  events.forEach(ev => {
+    const card = document.createElement("div");
+    card.className = "item";
+    const name = document.createElement("div");
+    name.className = "item-title";
+    name.textContent = ev.name;
+    const date = document.createElement("p");
+    date.textContent = ev.date;
+    const actions = document.createElement("div");
+    actions.className = "actions";
+    actions.append(
+      makeButton(words[lang].open, () => openBudget(ev.id)),
+      makeButton(words[lang].delete, () => {
+        if (!confirm(words[lang].confirm)) return;
+        events = events.filter(e => e.id !== ev.id);
+        save(); renderEvents();
+      })
+    );
+    card.append(name,date,actions);
+    eventList.append(card);
+  });
+}
+function renderBudget() {
+  const ev = events.find(e => e.id === activeId);
+  if (!ev) { showEvents(); return; }
+  budgetTitle.textContent = ev.name;
+  const totalValue = ev.expenses.reduce((s,e) => s + e.amount,0);
+  const paidValue = ev.expenses.reduce((s,e) => s + e.paid,0);
+  total.textContent = money(totalValue);
+  paid.textContent = money(paidValue);
+  remaining.textContent = money(totalValue - paidValue);
+  percent.textContent = totalValue ?
+    Math.round(paidValue / totalValue * 100) + "%" : "0%";
+  expenseList.replaceChildren();
+  if (!ev.expenses.length) {
+    expenseList.textContent = words[lang].empty;
+    return;
+  }
+  ev.expenses.forEach(ex => {
+    const card = document.createElement("div");
+    card.className = "item";
+    const title = document.createElement("div");
+    title.className = "item-title";
+    title.textContent = ex.name;
+    const info = document.createElement("p");
+    info.textContent = words[lang].total + ": " + money(ex.amount)
+      + " | " + words[lang].paidLabel + ": " + money(ex.paid);
+    const actions = document.createElement("div");
+    actions.className = "actions";
+    actions.append(
+      makeButton(words[lang].edit, () => {
+        const amount = prompt(words[lang].amount, ex.amount);
+        if (amount === null) return;
+        const paid = prompt(words[lang].paid, ex.paid);
+        if (paid === null) return;
+        const a = Number(amount), p = Number(paid);
+        if (!Number.isFinite(a) || !Number.isFinite(p) ||
+            a < 0 || p < 0 || p > a) {
+          alert(words[lang].invalid); return;
+        }
+        ex.amount = a; ex.paid = p;
+        save(); renderBudget();
+      }),
+      makeButton(words[lang].delete, () => {
+        if (!confirm(words[lang].confirm)) return;
+        ev.expenses = ev.expenses.filter(e => e.id !== ex.id);
+        save(); renderBudget();
+      })
+    );
+    card.append(title,info,actions);
+    expenseList.append(card);
+  });
+}
+eventForm.addEventListener("submit", e => {
+  e.preventDefault();
+  events.push({
+    id: crypto.randomUUID(),
+    name: eventName.value.trim(),
+    date: eventDate.value,
+    expenses: []
+  });
+  save(); eventForm.reset(); renderEvents();
+});
+expenseForm.addEventListener("submit", e => {
+  e.preventDefault();
+  const ev = events.find(e => e.id === activeId);
+  if (!ev) return;
+  const amount = Number(expenseAmount.value);
+  const paid = Number(expensePaid.value);
+  if (paid > amount || paid < 0 || amount < 0) {
+    alert(words[lang].invalid); return;
+  }
+  ev.expenses.push({
+    id: crypto.randomUUID(),
+    name: expenseName.value.trim(),
+    amount, paid
+  });
+  save(); expenseForm.reset(); renderBudget();
+});
+setLang(lang);
+</script>
+</body>
+</html>

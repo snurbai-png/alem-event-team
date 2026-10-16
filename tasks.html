@@ -1,0 +1,324 @@
+
+<!DOCTYPE html>
+<html lang="kk">
+<link rel="stylesheet" href="style.css">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Alem Event — Тапсырмалар</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #1B2235;
+      color: white;
+    }
+    .app {
+      max-width: 430px;
+      min-height: 100vh;
+      margin: auto;
+      padding: 24px 20px 100px;
+      background: linear-gradient(160deg, #18295c, #244caa);
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 35px;
+    }
+    .logo { width: 145px; }
+    button { cursor: pointer; font: inherit; }
+    .lang button, .back {
+      border: 1px solid #e6c77b;
+      border-radius: 12px;
+      background: #344a81;
+      color: white;
+      padding: 10px;
+    }
+    h1 { font-size: 28px; margin-bottom: 8px; }
+    .subtitle { color: #d4ddf3; }
+    .card {
+      border: 1px solid #e6c77b;
+      border-radius: 20px;
+      padding: 18px;
+      margin-top: 18px;
+      background: rgba(255,255,255,.07);
+    }
+    input, select {
+      width: 100%;
+      padding: 13px;
+      margin: 7px 0;
+      border: 1px solid #a7b8d9;
+      border-radius: 10px;
+      font-size: 15px;
+    }
+    .add {
+      width: 100%;
+      padding: 14px;
+      background: #e6c77b;
+      color: #19264a;
+      border: 0;
+      border-radius: 12px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .task {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid #d9c28a;
+      border-radius: 15px;
+      padding: 15px;
+      margin-top: 12px;
+      background: rgba(255,255,255,.08);
+    }
+    .task input { width: 20px; height: 20px; }
+    .task-info { flex: 1; overflow-wrap: anywhere; }
+    .task-info small {
+      display: block;
+      color: #d3ddf3;
+      margin-top: 6px;
+    }
+    .done .task-info { opacity: .55; text-decoration: line-through; }
+    .delete {
+      border: 0;
+      background: transparent;
+      color: #ffcccc;
+      font-size: 22px;
+    }
+    .back { margin-top: 28px; width: 100%; }
+    
+/* Төменгі мәзір */
+.tasks-page .bottom-nav {
+  display: none !important;
+  justify-content: space-around;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  max-width: 430px;
+  margin: 30px auto 0;
+  padding: 18px 8px;
+  background: #18295c;
+  border: 1px solid #e8c77b;
+  border-radius: 22px;
+  box-sizing: border-box;
+}
+
+.tasks-page .bottom-nav button {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 8px 2px;
+  border: none;
+  background: transparent;
+  color: white;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.tasks-page .bottom-nav button span {
+  font-size: 23px;
+}
+
+.tasks-page .bottom-nav button label {
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.tasks-page .bottom-nav button.active {
+  color: #f3d48b;
+}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <img src="images/logo.png" class="logo" alt="Alem Event">
+    <div class="lang">
+      <button onclick="setLang('kk')">ҚАЗ</button>
+      <button onclick="setLang('ru')">РУС</button>
+    </div>
+  </header>
+
+  <h1 id="title">Тапсырмалар</h1>
+  <p class="subtitle" id="subtitle">Іс-шараға дайындықты басқару</p>
+
+  <div class="card">
+    <h3 id="addTitle">Жаңа тапсырма</h3>
+    <input id="taskName" placeholder="Тапсырма атауы">
+    <input id="taskDate" type="datetime-local">
+    <input id="taskPerson" placeholder="Жауапты адам">
+    <button class="add" id="addButton" onclick="addTask()">
+      + Тапсырма қосу
+    </button>
+  </div>
+
+  <h2 id="listTitle">Тапсырмалар тізімі</h2>
+  <p id="count"></p>
+  <div id="taskList"></div>
+
+  <button class="back" id="backButton" onclick="location.href='index.html'">
+    ← Басты бетке қайту
+  </button>
+</div>
+
+<script>
+  let lang = 'kk';
+  let tasks = JSON.parse(localStorage.getItem('alem_tasks') || '[]');
+
+  const translations = {
+    kk: {
+      title: 'Тапсырмалар',
+      subtitle: 'Іс-шараға дайындықты басқару',
+      addTitle: 'Жаңа тапсырма',
+      name: 'Тапсырма атауы',
+      person: 'Жауапты адам',
+      add: '+ Тапсырма қосу',
+      list: 'Тапсырмалар тізімі',
+      back: '← Басты бетке қайту',
+      count: 'Барлық тапсырма:',
+      empty: 'Әзірге тапсырма жоқ',
+      required: 'Тапсырманың атауын енгізіңіз'
+    },
+    ru: {
+      title: 'Задачи',
+      subtitle: 'Управление подготовкой к мероприятию',
+      addTitle: 'Новая задача',
+      name: 'Название задачи',
+      person: 'Ответственный',
+      add: '+ Добавить задачу',
+      list: 'Список задач',
+      back: '← На главную',
+      count: 'Всего задач:',
+      empty: 'Пока нет задач',
+      required: 'Введите название задачи'
+    }
+  };
+
+  function save() {
+    localStorage.setItem('alem_tasks', JSON.stringify(tasks));
+  }
+
+  function setLang(value) {
+    lang = value;
+    const t = translations[lang];
+    document.documentElement.lang = lang;
+    title.textContent = t.title;
+    subtitle.textContent = t.subtitle;
+    addTitle.textContent = t.addTitle;
+    taskName.placeholder = t.name;
+    taskPerson.placeholder = t.person;
+    addButton.textContent = t.add;
+    listTitle.textContent = t.list;
+    backButton.textContent = t.back;
+    render();
+  }
+
+  function addTask() {
+    const name = taskName.value.trim();
+    if (!name) {
+      alert(translations[lang].required);
+      return;
+    }
+    tasks.push({
+      id: Date.now() + Math.random(),
+      name,
+      date: taskDate.value,
+      person: taskPerson.value.trim(),
+      done: false
+    });
+    save();
+    taskName.value = '';
+    taskDate.value = '';
+    taskPerson.value = '';
+    render();
+  }
+
+  function toggleTask(id) {
+    const task = tasks.find(t => t.id === id);
+    if (task) task.done = !task.done;
+    save();
+    render();
+  }
+
+  function deleteTask(id) {
+    tasks = tasks.filter(t => t.id !== id);
+    save();
+    render();
+  }
+
+  function render() {
+    const list = document.getElementById('taskList');
+    list.replaceChildren();
+    count.textContent = translations[lang].count + ' ' + tasks.length;
+
+    if (!tasks.length) {
+      const p = document.createElement('p');
+      p.textContent = translations[lang].empty;
+      list.appendChild(p);
+    }
+
+    tasks.forEach(task => {
+      const row = document.createElement('div');
+      row.className = 'task' + (task.done ? ' done' : '');
+
+      const check = document.createElement('input');
+      check.type = 'checkbox';
+      check.checked = task.done;
+      check.onchange = () => toggleTask(task.id);
+
+      const info = document.createElement('div');
+      info.className = 'task-info';
+      const name = document.createElement('strong');
+      name.textContent = task.name;
+      const detail = document.createElement('small');
+      detail.textContent = [task.date.replace('T', ' '), task.person]
+        .filter(Boolean).join(' · ');
+      info.append(name, detail);
+
+      const del = document.createElement('button');
+      del.className = 'delete';
+      del.textContent = '×';
+      del.onclick = () => deleteTask(task.id);
+
+      row.append(check, info, del);
+      list.appendChild(row);
+    });
+  }
+
+  setLang('kk');
+</script>
+
+<nav class="bottom-nav">
+  <button type="button" onclick="window.location.href='index.html'">
+    <span>◆</span>
+    <label>Басты бет</label>
+  </button>
+
+ <button type="button" class="active" onclick="window.location.href='tasks.html'"></button>
+    <span>☑</span>
+    <label>Тапсырмалар</label>
+  </button>
+
+  <button type="button">
+    <span>₸</span>
+    <label>Смета</label>
+  </button>
+
+  <button type="button">
+    <span>◷</span>
+    <label>Тайминг</label>
+  </button>
+
+  <button type="button">
+    <span>•••</span>
+    <label>Тағы</label>
+  </button>
+</nav>
+<body class="tasks-page">
+</html>

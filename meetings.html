@@ -1,0 +1,226 @@
+
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alem Event — Кездесулер</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: white;
+  background: linear-gradient(155deg,#171332,#173dc5,#66a4e5);
+  min-height: 100vh;
+}
+.app { max-width: 650px; margin: auto; padding: 35px 20px 70px; }
+header { display: flex; justify-content: space-between; align-items: center; }
+.logo { color: #ffe09a; font-size: 29px; font-weight: bold; }
+.lang button {
+  background: transparent; color: white;
+  border: 1px solid #ffe09a; border-radius: 12px;
+  padding: 10px; cursor: pointer;
+}
+h1 { margin-bottom: 5px; }
+.subtitle { color: #e4e9ff; }
+.card, .item {
+  background: #ffffff18;
+  border: 1px solid #e8c77b;
+  border-radius: 23px;
+  padding: 22px;
+  margin-top: 22px;
+}
+input {
+  display: block; width: 100%; padding: 17px;
+  margin: 13px 0; border: none; border-radius: 13px;
+  font-size: 16px;
+}
+button { cursor: pointer; }
+.gold, .back {
+  width: 100%; padding: 17px; border: none;
+  border-radius: 13px; font-size: 16px;
+}
+.gold { background: #f7d580; color: #243769; font-weight: bold; }
+.back { margin-top: 28px; background: #ffffff30; color: white; }
+.item { display: flex; justify-content: space-between; gap: 15px; }
+.item strong { font-size: 18px; }
+.item p { color: #e1e9ff; line-height: 1.6; }
+.actions { display: flex; flex-direction: column; gap: 8px; }
+.actions button {
+  border: 1px solid #ffe09a; border-radius: 9px;
+  background: #ffffff20; color: white; padding: 9px;
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">✦ alem event</div>
+    <div class="lang">
+      <button onclick="setLang('kk')">ҚАЗ</button>
+      <button onclick="setLang('ru')">РУС</button>
+    </div>
+  </header>
+
+  <h1 id="title">Кездесулер</h1>
+  <p class="subtitle" id="subtitle">Іс-шара кездесулерін басқару</p>
+
+  <div class="card">
+    <h2 id="formTitle">Жаңа кездесу</h2>
+    <form id="meetingForm">
+      <input id="meetingName" placeholder="Кездесу атауы" required>
+      <input id="meetingDate" type="datetime-local" required>
+      <input id="meetingPerson" placeholder="Жауапты адам">
+      
+<input
+  type="text"
+  id="meetingAddress"
+  placeholder="Кездесу мекенжайы"
+/>
+
+<input
+  type="url"
+  id="meeting2gis"
+  placeholder="2GIS сілтемесін енгізіңіз"
+/>
+
+      <button class="gold" id="addButton" type="submit">+ Кездесу қосу</button>
+    </form>
+  </div>
+
+  <h2 id="listTitle">Кездесулер тізімі</h2>
+  <p id="count"></p>
+  <div id="meetingList"></div>
+  <button class="back" id="backButton" onclick="location.href='index.html'">
+    ← Басты бетке қайту
+  </button>
+</div>
+
+<script>
+const KEY = 'alem_meetings';
+let meetings = [];
+try {
+  const stored = JSON.parse(localStorage.getItem(KEY) || '[]');
+  meetings = Array.isArray(stored) ? stored : [];
+} catch(e) { meetings = []; }
+
+let lang = localStorage.getItem('alemLanguage') === 'ru' ? 'ru' : 'kk';
+let editingId = null;
+
+const words = {
+  kk: {
+    title:'Кездесулер', subtitle:'Іс-шара кездесулерін басқару',
+    form:'Жаңа кездесу', name:'Кездесу атауы',
+    person:'Жауапты адам', add:'+ Кездесу қосу',
+    save:'Өзгерісті сақтау', list:'Кездесулер тізімі',
+    count:'Барлық кездесу: ', empty:'Әзірге кездесу жоқ',
+    edit:'Өзгерту', del:'Өшіру', back:'← Басты бетке қайту',
+    confirm:'Кездесуді өшіресіз бе?'
+  },
+  ru: {
+    title:'Встречи', subtitle:'Управление встречами мероприятия',
+    form:'Новая встреча', name:'Название встречи',
+    person:'Ответственный', add:'+ Добавить встречу',
+    save:'Сохранить изменения', list:'Список встреч',
+    count:'Всего встреч: ', empty:'Пока нет встреч',
+    edit:'Изменить', del:'Удалить', back:'← На главную',
+    confirm:'Удалить встречу?'
+  }
+};
+
+const $ = id => document.getElementById(id);
+function save() {
+  localStorage.setItem(KEY, JSON.stringify(meetings));
+}
+function setLang(value) {
+  lang = value;
+  localStorage.setItem('alemLanguage', lang);
+  render();
+}
+function render() {
+  const w = words[lang];
+  document.documentElement.lang = lang;
+  $('title').textContent = w.title;
+  $('subtitle').textContent = w.subtitle;
+  $('formTitle').textContent = w.form;
+  $('meetingName').placeholder = w.name;
+  $('meetingPerson').placeholder = w.person;
+  $('addButton').textContent = editingId === null ? w.add : w.save;
+  $('listTitle').textContent = w.list;
+  $('backButton').textContent = w.back;
+  $('count').textContent = w.count + meetings.length;
+
+  const list = $('meetingList');
+  list.replaceChildren();
+  if (!meetings.length) {
+    list.textContent = w.empty;
+    return;
+  }
+
+  [...meetings].sort((a,b) => a.date.localeCompare(b.date))
+    .forEach(m => {
+      const card = document.createElement('div');
+      card.className = 'item';
+      const info = document.createElement('div');
+      const title = document.createElement('strong');
+      title.textContent = m.name;
+      const details = document.createElement('p');
+      details.textContent = m.date.replace('T',' ') +
+        (m.person ? ' · ' + m.person : '');
+      info.append(title, details);
+
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+      const edit = document.createElement('button');
+      edit.textContent = w.edit;
+      edit.onclick = () => {
+        editingId = m.id;
+        $('meetingName').value = m.name;
+        $('meetingDate').value = m.date;
+        $('meetingPerson').value = m.person;
+        $('addButton').textContent = w.save;
+        window.scrollTo(0,0);
+      };
+      const del = document.createElement('button');
+      del.textContent = '× ' + w.del;
+      del.onclick = () => {
+        if (!confirm(w.confirm)) return;
+        meetings = meetings.filter(x => x.id !== m.id);
+        if (editingId === m.id) editingId = null;
+        $('meetingForm').reset();
+        save();
+        render();
+      };
+      actions.append(edit, del);
+      card.append(info, actions);
+      list.append(card);
+    });
+}
+
+$('meetingForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const name = $('meetingName').value.trim();
+  const date = $('meetingDate').value;
+  const person = $('meetingPerson').value.trim();
+  const address = $('meetingAddress').value.trim();
+const gisLink = $('meeting2gis').value.trim();
+  if (!name || !date) return;
+
+  if (editingId !== null) {
+    const m = meetings.find(x => x.id === editingId);
+    if (m) Object.assign(m, {name, date, person, address, gisLink});
+  } else {
+    meetings.push({
+     id: Date.now() + Math.random(), name, date, person, address, gisLink
+    });
+  }
+  editingId = null;
+  $('meetingForm').reset();
+  save();
+  render();
+});
+render();
+</script>
+</body>
+</html>
